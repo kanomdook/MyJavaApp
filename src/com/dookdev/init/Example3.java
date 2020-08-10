@@ -1,6 +1,7 @@
 package com.dookdev.init;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -37,7 +38,7 @@ public class Example3 {
 		template.setGroupAlarm(groupAlarm);
 		// Mockup Data groupDeclare For Test //
 		groupDeclare.setAutoJob("N");
-		groupDeclare.setWorkHourStartTime("00:00:00");
+		groupDeclare.setWorkHourStartTime("00:59:39");
 		groupDeclare.setWorkHourEndTime("05:59:59");
 		groupDeclare.setWorkHourResponseError("Out of work hour (00:00:00 - 05:59:59)");
 		groupDeclare.setMaxInTimeHr("2");
@@ -60,11 +61,11 @@ public class Example3 {
 		listCommand.add("SENDCMD \"su-toro\" \"Password:\"");
 		listCommand.add("SENDCMD \"abcd\" \"$\"");
 		listCommand.add("SENDCMD \"id -un\" \"$\" \"{Id}\"");
-		listCommand.add("CHECKTOCONTINUE ({Id} = \"toro\") \"Error : Cannot su toro\"");
+		listCommand.add("CHECKTOCONTINUE ({Id} = \"toro\") ? \"\" : \"Error : Cannot su toro\"");
 		listCommand.add("SENDCMD \"cd /eqx/af/recovery/permanentError\" \"$\"");
 		listCommand.add("SENDCMD \"pwd\" \"$\" \"{Path}\"");
 		listCommand.add(
-				"CHECKTOCONTINUE ({Path} = \"/eqx/af/recovery/permanentError\") \"Error : Cannot cd /eqx/af/recovery/permanentError\"");
+				"CHECKTOCONTINUE ({Path} = \"/eqx/af/recovery/permanentError\") ? \"\" : \"Error : Cannot cd /eqx/af/recovery/permanentError\"");
 		listCommand.add("SENDCMDTIMEOUT \"mv 1.txt 2.txt\" \"$\" \"{Path}\" \"30\"");
 		listCommand.add("GETALARMINFO \"{Instance}\" \"DESCRIPTION\" \".*Oracle[WEBDB].*\"");
 		listCommand.add("LOOKUPTABLE \"BMC_Agent_PORT_ORACLE\" \"{Instance}\" \"{Port}\"");
@@ -176,10 +177,26 @@ public class Example3 {
 	}
 
 	public static boolean validateTimeFormat(String time) {
+		boolean o = true;
 		// original "^(\d\d:\d\d:\d\d)$"
 		final Pattern pattern = Pattern.compile("^(\\d\\d:\\d\\d:\\d\\d)$");
 		Matcher matcher = pattern.matcher(time);
-		return matcher.matches();
+		if (matcher.matches()) {
+			String[] splTime = time.split(":");
+			int h = Integer.parseInt(splTime[0]);
+			int m = Integer.parseInt(splTime[1]);
+			int s = Integer.parseInt(splTime[2]);
+			if (h < 0 || h > 23) {
+				o = false;
+			} else if (m < 0 || m > 59) {
+				o = false;
+			} else if (s < 0 || s > 59) {
+				o = false;
+			}
+		} else {
+			o = false;
+		}
+		return o;
 	}
 
 	public static boolean validateSENDCMDFormat(String cmd) {
@@ -202,9 +219,9 @@ public class Example3 {
 
 	public static boolean validateCHECKTOCONTINUEFormat(String cmd) {
 		// original
-		// "^([A-Z]*\s\(((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\s[=><!]{1,2}\s((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\)\s\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")$"
+		// "^([A-Z]*\s\(((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\s{0,}([=><!]|regx|contains){1,2}\s{0,}((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\)\s{0,}\?\s{0,}\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\"\s{0,}\:\s{0,}\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")$"
 		final Pattern pattern = Pattern.compile(
-				"^([A-Z]*\\s\\(((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\s[=><!]{1,2}\\s((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\)\\s\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")$");
+				"^([A-Z]*\\s\\(((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\s{0,}([=><!]|regx|contains){1,2}\\s{0,}((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\)\\s{0,}\\?\\s{0,}\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\"\\s{0,}\\:\\s{0,}\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")$");
 		Matcher matcher = pattern.matcher(cmd);
 		return matcher.matches();
 	}
@@ -245,9 +262,9 @@ public class Example3 {
 
 	public static boolean validateRETURNRESULTFormat(String cmd) {
 		// original
-		// "^([A-Z]*\s\(((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\s[=><!]{1,2}\s((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\)\s\?\s\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\"\s\:\s\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")$"
+		// "^([A-Z]*\s\(((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\s{0,}([=><!]|regx|contains){1,2}\s{0,}((\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")|([0-9]{1,})|(\{{1}([a-zA-Z0-9]){1,}\}{1}))\)\s{0,}\?\s{0,}\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\"\s{0,}\:\s{0,}\"[\sa-zA-Z\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\")$"
 		final Pattern pattern = Pattern.compile(
-				"^([A-Z]*\\s\\(((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\s[=><!]{1,2}\\s((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\)\\s\\?\\s\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\"\\s\\:\\s\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")$");
+				"^([A-Z]*\\s\\(((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\s{0,}([=><!]|regx|contains){1,2}\\s{0,}((\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")|([0-9]{1,})|(\\{{1}([a-zA-Z0-9]){1,}\\}{1}))\\)\\s{0,}\\?\\s{0,}\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\"\\s{0,}\\:\\s{0,}\\\"[\\sa-zA-Z\\/0-9{}_$&+,:;=?@#|'<>.^*()%!-]*\\\")$");
 		Matcher matcher = pattern.matcher(cmd);
 		return matcher.matches();
 	}
