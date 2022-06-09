@@ -1,0 +1,61 @@
+//VAS_WI_11111.wi
+
+TEMPLATE
+
+EXCOL1 "Node001"
+EXCOL2 ". *Simple.*"
+ALERTNAME "Ping.*"
+AMONAME "TTT.*" 
+DESCRIPTION = ".*permanentError.*"
+
+
+DECARE
+/* 
+  (WorkHour in FIRSTINSERTIME) 
+  WORKHOUR "00:00:00 - 05:59:59" <ReturnErrorMsg>
+  MAXTIMESINHR 2 <ReturnErrorMsg>
+  MAXTIMESIN24HR 5 <ReturnErrorMsg>
+*/
+WORKHOUR "00:00:00 - 05:59:59" "Out of work hour (00:00:00 - 05:59:59)"
+MAXTIMESINHR 2 "Max in time HR (2)"
+MAXTIMESIN24HR 5 "Max in time 24 HR (5)"
+AUTOJOB "N"
+END DECARE
+
+//Start WI
+BEGIN
+SENDCMD "su - toro" "Password:"
+END BEGIN
+
+END TEMPLATE
+
+
+//------------------------------------------------------------------
+TEMPLATE
+
+EXCOL1 "Node001"
+EXCOL2 ". *Ignore.*"
+ALERTNAME "Ping.*"
+AMONAME "TTT.*" 
+DESCRIPTION = ".*permanentSuccess.*"
+
+
+DECARE
+/* 
+  (WorkHour in FIRSTINSERTIME) 
+  WORKHOUR "00:00:00 - 05:59:59" <ReturnErrorMsg>
+  MAXTIMESINHR 2 <ReturnErrorMsg>
+  MAXTIMESIN24HR 5 <ReturnErrorMsg>
+*/
+WORKHOUR "00:00:00 - 05:59:59" "Out of work hour (00:00:00 - 05:59:59)"
+MAXTIMESINHR "2" "Max in time HR (2)"
+MAXTIMESIN24HR "5" "Max in time 24 HR (5)"
+AUTOJOB "N"
+END DECARE
+
+//Start WI
+BEGIN
+SENDCMD "su - toro" "Password:"
+END BEGIN
+
+END TEMPLATE

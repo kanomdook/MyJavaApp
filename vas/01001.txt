@@ -1,0 +1,39 @@
+TEMPLATE
+
+ALARM
+EXCOL1 ""
+EXCOL2 "VASDB_AIS_VAS"
+ALERTNAME ""
+AMONAME ""
+DESCRIPTION "*permanentError*"
+NODEKEY "PINSSMFRA201G,PINSSMFRA202G,PINSSMFRA801G,PINSSMFRA802G"
+JUMPHOST ""
+END ALARM
+
+DECLARE
+WORKHOUR "00:00:00" "05:59:59" "Out of work hour (00:00:00 - 05:59:59)"
+MAXTIMESINHR "2" "Max in time HR (2)"
+MAXTIMESIN24HR "5" "Max in time 24 HR (5)"
+AUTOJOB "N"
+EXPECTTIMEOUT "10"
+VARSTR Id , Path , Instance , Port
+VARINT Count
+END DECLARE
+
+BEGIN
+SENDCMD "su - toro" "Password:"
+SENDCMD "abcd" "$"
+SENDCMD "id -un" "$" "{Id}"
+CHECKTOCONTINUE ({Id} = "toro") ? "" : "Error : Cannot su toro"
+SENDCMD "cd /eqx/af/recovery/permanentError" "$"
+SENDCMD "pwd" "$" "{Path}"
+CHECKTOCONTINUE ({Path} = "/eqx/af/recovery/permanentError") ? "" : "Error : Cannot cd /eqx/af/recovery/permanentError"
+SENDCMDTIMEOUT "mv 1.txt 2.txt" "$" "{Path}" "30"
+GETALARMINFO "{Instance}" "DESCRIPTION" ".*Oracle[WEBDB].*"
+LOOKUPTABLE "BMC_Agent_PORT_ORACLE" "{Instance}" "{Port}"
+SENDCMD "net ORACLE.name {Port}" "$"
+WAIT "5"
+RETURNRESULT ({Port} = "8080") ? "Success" : "Error : Cannot start {Instance} PatrolAgent"
+END BEGIN
+
+END TEMPLATE
